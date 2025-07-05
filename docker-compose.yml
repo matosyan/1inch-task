@@ -1,0 +1,20 @@
+services:
+  tt-api:
+    container_name: 'one-inch-api-service'
+    env_file:
+      - .env
+    build:
+      dockerfile: 'Dockerfile'
+      context: .
+      target: production
+    network_mode: host
+    restart: always
+# If you want to create one-inch-net network, please run current command `docker network create one-inch-net`
+# --
+# If you have other docker-compose.yml files that should work with the 1inch api service
+# they should have the same network configurations
+# Note: When using host networking, the external network configuration is not needed
+# networks:
+#   default:
+#     external: true
+#     name: one-inch-net
