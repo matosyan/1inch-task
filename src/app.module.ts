@@ -10,11 +10,10 @@ import { ErrorInterceptor } from './shared/interceptors';
 
 // Providers
 import { AppService } from './app.service';
-import { CacheConfigService, OpenAIConfigService, AppLoggerConfigService } from './shared/services';
+import { OpenAIConfigService, AppLoggerConfigService } from './shared/services';
 
 // NestJS Modules
 import { ConfigModule } from '@nestjs/config';
-import { CacheModule } from '@nestjs/cache-manager';
 
 // Global Modules
 import { OpenAIModule } from './shared/openai/openai.module';
@@ -36,10 +35,6 @@ import { AppLoggerModule } from './shared/app-logger/app-logger.module';
     }),
     AppLoggerModule.forRootAsync({
       useClass: AppLoggerConfigService,
-    }),
-    CacheModule.registerAsync({
-      isGlobal: true,
-      useClass: CacheConfigService,
     }),
     OpenAIModule.forRootAsync({
       useClass: OpenAIConfigService,
