@@ -10,17 +10,17 @@ import { ErrorInterceptor } from './shared/interceptors';
 
 // Providers
 import { AppService } from './app.service';
-import { OpenAIConfigService, AppLoggerConfigService } from './shared/services';
+import { AppLoggerConfigService } from './shared/services';
 
 // NestJS Modules
 import { ConfigModule } from '@nestjs/config';
 
 // Global Modules
-import { OpenAIModule } from './shared/openai/openai.module';
 import { AppLoggerModule } from './shared/app-logger/app-logger.module';
 
 // General Modules
-//  ...
+import { AuthModule } from './modules/auth/auth.module';
+import { BlockchainModule } from './modules/blockchain/blockchain.module';
 
 @Module({
   imports: [
@@ -36,9 +36,8 @@ import { AppLoggerModule } from './shared/app-logger/app-logger.module';
     AppLoggerModule.forRootAsync({
       useClass: AppLoggerConfigService,
     }),
-    OpenAIModule.forRootAsync({
-      useClass: OpenAIConfigService,
-    }),
+    AuthModule,
+    BlockchainModule,
   ],
   controllers: [AppController],
   providers: [

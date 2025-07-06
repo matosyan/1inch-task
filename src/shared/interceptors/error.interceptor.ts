@@ -16,7 +16,7 @@ export class ErrorInterceptor implements NestInterceptor {
     return next.handle().pipe(
       catchError((error: any) => {
         if (!error.status || error.status >= HttpStatus.INTERNAL_SERVER_ERROR) {
-          // log or sentry
+          // sentry, incident.io, or other error tracking service
         }
 
         return throwError(() => error);

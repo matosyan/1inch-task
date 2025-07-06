@@ -74,7 +74,9 @@
     "typeorm": "^0.3.20",
     "ua-parser-js": "^2.0.0",
     "winston": "^3.17.0",
-    "winston-daily-rotate-file": "^5.0.0"
+    "winston-daily-rotate-file": "^5.0.0",
+    "ethers": "^6.13.4",
+    "bignumber.js": "^9.1.2"
   },
   "devDependencies": {
     "@faker-js/faker": "^9.7.0",
@@ -96,6 +98,7 @@
     "@types/sequelize": "^4.28.20",
     "@types/supertest": "^6.0.2",
     "@types/ua-parser-js": "^0.7.39",
+    "@types/bignumber.js": "^5.0.0",
     "@typescript-eslint/eslint-plugin": "^8.22.0",
     "@typescript-eslint/parser": "^8.22.0",
     "commander": "^13.1.0",
