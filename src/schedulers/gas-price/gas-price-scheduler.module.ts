@@ -1,11 +1,9 @@
 import { Module } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { EthersModule } from 'src/packages/ethers/ethers.module';
 import { GasPriceSchedulerService } from './gas-price-scheduler.service';
+import { GasPriceRepository } from 'src/repositories';
 
 @Module({
   imports: [],
-  providers: [GasPriceSchedulerService],
-  exports: [GasPriceSchedulerService],
+  providers: [GasPriceSchedulerService, GasPriceRepository],
 })
 export class GasPriceSchedulerModule {}

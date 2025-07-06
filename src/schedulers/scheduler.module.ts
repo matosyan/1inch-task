@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { ScheduleModule } from '@nestjs/schedule';
-import { GasPriceSchedulerService } from './gas-price/gas-price-scheduler.service';
+import { GasPriceSchedulerModule } from './gas-price/gas-price-scheduler.module';
 
 @Module({
-  imports: [ScheduleModule.forRoot()],
-  providers: [GasPriceSchedulerService],
+  imports: [ScheduleModule.forRoot(), GasPriceSchedulerModule],
+  providers: [],
 })
 export class SchedulerModule {}
