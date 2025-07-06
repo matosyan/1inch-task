@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { AppLoggerOptions, AppLoggerOptionsFactory } from '../app-logger/interfaces';
+import { AppLoggerOptions, AppLoggerOptionsFactory } from '../../packages/app-logger/interfaces';
 
 @Injectable()
 export class AppLoggerConfigService implements AppLoggerOptionsFactory {

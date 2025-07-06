@@ -7,7 +7,7 @@ import { ConfigService } from '@nestjs/config';
 import { useContainer } from 'class-validator';
 import { json, urlencoded } from 'body-parser';
 import { ValidationPipe } from '@nestjs/common';
-import { AppLogger } from './shared/app-logger/app-logger';
+import { AppLogger } from './packages/app-logger/app-logger';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {

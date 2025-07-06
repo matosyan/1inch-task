@@ -20,8 +20,13 @@ export default () => ({
   openai: {
     apiKey: process.env.OPENAI_API_KEY,
   },
-  blockchain: {
-    ethereumRpcUrl: process.env.ETHEREUM_RPC_URL,
-    gasPriceCacheDuration: parseInt(process.env.GAS_PRICE_CACHE_DURATION) || 10000,
+  ethers: {
+    adapter: process.env.ETHERS_ADAPTER,
+    infura: {
+      apiKey: process.env.ETHERS_INFURA_API_KEY,
+      rpc: {
+        url: process.env.ETHERS_INFURA_RPC_URL,
+      },
+    },
   },
 });

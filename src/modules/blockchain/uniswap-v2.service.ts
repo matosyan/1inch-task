@@ -1,8 +1,8 @@
 import { Injectable, Logger, BadRequestException } from '@nestjs/common';
-import { BlockchainService } from './blockchain.service';
 import { ethers } from 'ethers';
 import BigNumber from 'bignumber.js';
 import { UniswapReturnDto } from './dto/uniswap-return.dto';
+import { EthersService } from '../../packages/ethers/ethers.service';
 
 @Injectable()
 export class UniswapV2Service {
@@ -29,7 +29,7 @@ export class UniswapV2Service {
     'function symbol() external view returns (string)',
   ];
 
-  constructor(private blockchainService: BlockchainService) {}
+  constructor(private readonly ethersService: EthersService) {}
 
   async calculateReturn(
     fromTokenAddress: string,
@@ -90,10 +90,7 @@ export class UniswapV2Service {
   }
 
   private async getPairAddress(tokenA: string, tokenB: string): Promise<string> {
-    const factory = await this.blockchainService.getContract(
-      this.FACTORY_ADDRESS,
-      this.FACTORY_ABI,
-    );
+    const factory = await this.ethersService.getContract(this.FACTORY_ADDRESS, this.FACTORY_ABI);
     return await factory.getPair(tokenA, tokenB);
   }
 
@@ -103,7 +100,7 @@ export class UniswapV2Service {
     token0: string;
     token1: string;
   }> {
-    const pair = await this.blockchainService.getContract(pairAddress, this.PAIR_ABI);
+    const pair = await this.ethersService.getContract(pairAddress, this.PAIR_ABI);
     const [reserve0, reserve1] = await pair.getReserves();
     const token0 = await pair.token0();
     const token1 = await pair.token1();
@@ -122,7 +119,7 @@ export class UniswapV2Service {
       return 18; // WETH decimals
     }
 
-    const token = await this.blockchainService.getContract(tokenAddress, this.ERC20_ABI);
+    const token = await this.ethersService.getContract(tokenAddress, this.ERC20_ABI);
     return await token.decimals();
   }
 
