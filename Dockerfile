@@ -5,27 +5,30 @@
 # AND also creates a Docker image optimized for production.
 ###################
 
-ARG BASE_IMAGE=node:24-alpine
+ARG BASE_IMAGE=node:22-alpine
 
 FROM $BASE_IMAGE AS build
 
 WORKDIR /app
 
 COPY package.json ./
-COPY pnpm-lock.yaml ./
+COPY package-lock.json ./
 # COPY .npmrc ./
-
-RUN npm install -g --no-audit --verbose pnpm
 
 ARG NPM_TOKEN
 
-RUN NPM_TOKEN=$NPM_TOKEN pnpm install
+ENV NODE_OPTIONS="--max_old_space_size=2048"
+
+# Configure npm and install dependencies
+RUN npm config set fetch-retries 5 && \
+    npm config set fetch-retry-factor 2 && \
+    NPM_TOKEN=$NPM_TOKEN npm ci
 
 COPY . .
 
 RUN npm run build
 
-RUN NPM_TOKEN=$NPM_TOKEN pnpm prune --prod
+RUN NPM_TOKEN=$NPM_TOKEN npm ci --omit=dev
 
 ####################
 ## PRODUCTION
