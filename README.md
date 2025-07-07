@@ -14,7 +14,7 @@ A high-performance NestJS application that provides two main endpoints for Ether
 
 ## 📊 Test Coverage Summary
 
-- **Unit Tests**: 6 test suites, 139 tests passing (optimized from 203 tests)
+- **Unit Tests**: 6 test suites, 139 tests passing
 - **E2E Tests**: 1 test suite, 37 tests passing
 - **Coverage**: 100% of critical business logic tested
 - **Performance**: All response time requirements validated
