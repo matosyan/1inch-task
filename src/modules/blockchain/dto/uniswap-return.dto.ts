@@ -15,21 +15,21 @@ export class UniswapReturnDto {
 
   @ApiProperty({
     description: 'Input amount in human-readable format',
-    example: '1.5',
+    example: 1.5,
   })
-  amountIn: string;
+  amountIn: number;
 
   @ApiProperty({
     description: 'Calculated output amount in human-readable format',
-    example: '0.000123456789',
+    example: 0.000123456789,
   })
-  amountOut: string;
+  amountOut: number;
 
   @ApiProperty({
     description: 'Price impact as a percentage',
-    example: '0.15',
+    example: 0.15,
   })
-  priceImpact: string;
+  priceImpact: number;
 
   @ApiProperty({
     description: 'Timestamp when the calculation was performed',

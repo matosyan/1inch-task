@@ -30,9 +30,6 @@ cp .env.example .env
 # Ethereum RPC Configuration
 ETHEREUM_RPC_URL=https://mainnet.infura.io/v3/YOUR_INFURA_PROJECT_ID
 
-# Gas Price Cache Configuration (optional)
-GAS_PRICE_CACHE_DURATION=10000  # 10 seconds
-
 # Application Configuration
 NODE_ENV=development
 APP_PORT=3000

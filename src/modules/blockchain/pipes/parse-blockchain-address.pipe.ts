@@ -1,11 +1,12 @@
+import { ethers } from 'ethers';
+import { isEthereumAddress } from 'class-validator';
 import {
-  PipeTransform,
+  Optional,
   Injectable,
+  PipeTransform,
   ArgumentMetadata,
   BadRequestException,
-  Optional,
 } from '@nestjs/common';
-import { isEthereumAddress } from 'class-validator';
 
 /**
  * Supported blockchain networks
@@ -24,7 +25,6 @@ export enum BlockchainNetwork {
 export interface BlockchainAddressPipeOptions {
   required?: boolean;
   network?: BlockchainNetwork;
-  allowChecksum?: boolean;
 }
 
 @Injectable()
@@ -36,7 +36,6 @@ export class ParseBlockchainAddressPipe implements PipeTransform {
   constructor(@Optional() options?: BlockchainAddressPipeOptions) {
     this.required = options?.required !== false;
     this.network = options?.network || BlockchainNetwork.ETHEREUM;
-    this.allowChecksum = options?.allowChecksum !== false;
   }
 
   /**
@@ -114,7 +113,7 @@ export class ParseBlockchainAddressPipe implements PipeTransform {
   private isValidAddressForNetwork(address: string): boolean {
     switch (this.network) {
       case BlockchainNetwork.ETHEREUM:
-        return this.isValidEthereumAddress(address);
+        return this.isValidEthereumAddress(address) && ethers.isAddress(address);
 
       // Future networks can be added here
       // case BlockchainNetwork.BITCOIN:
@@ -152,44 +151,6 @@ export class ParseBlockchainAddressPipe implements PipeTransform {
       return false;
     }
 
-    // Optional: Validate checksum if enabled
-    if (this.allowChecksum && this.hasChecksumCase(address)) {
-      return this.isValidChecksumAddress(address);
-    }
-
     return true;
   }
-
-  /**
-   * Checks if address has mixed case (indicating checksum)
-   * @param address - Address to check
-   * @returns true if address has mixed case
-   */
-  private hasChecksumCase(address: string): boolean {
-    const hex = address.slice(2); // Remove 0x prefix
-    return hex !== hex.toLowerCase() && hex !== hex.toUpperCase();
-  }
-
-  /**
-   * Validates EIP-55 checksum address
-   * @param address - Address to validate
-   * @returns true if checksum is valid
-   */
-  private isValidChecksumAddress(address: string): boolean {
-    // Basic checksum validation - in production, you might want to use
-    // a more robust library like ethers.js for this
-    try {
-      // This is a simplified version - consider using ethers.getAddress() for production
-      const hex = address.slice(2);
-      return /^[a-fA-F0-9]{40}$/.test(hex);
-    } catch {
-      return false;
-    }
-  }
-
-  // Future network validators can be added here
-  // private isValidBitcoinAddress(address: string): boolean {
-  //   // Bitcoin address validation logic
-  //   return false;
-  // }
 }

@@ -7,12 +7,6 @@ export default () => ({
     name: process.env.APP_NAME,
     version: process.env.APP_VERSION,
   },
-  jwt: {
-    app: {
-      secret: process.env.JWT_APP_SECRET,
-      expiresIn: process.env.JWT_APP_EXPIRES_IN,
-    },
-  },
   logging: {
     provider: process.env.APP_LOGGER_PROVIDER,
     level: process.env.APP_LOGGER_LEVEL,

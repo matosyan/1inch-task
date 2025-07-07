@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { GasPriceDto, GasPriceRepository } from '../../repositories';
 import { AppLogger } from '../../packages/app-logger/app-logger';
-import { EthersService } from 'src/packages/ethers/ethers.service';
+import { EthersService } from '../../packages/ethers/ethers.service';
 
 @Injectable()
 export class GasPriceSchedulerService {
@@ -24,27 +24,27 @@ export class GasPriceSchedulerService {
       resourceName: GasPriceSchedulerService.name,
     });
 
-    const isConnected = await this.ethersService.isConnected();
-
-    if (!isConnected) {
-      this.logger.warn({
-        message: 'Ethers provider not connected',
-        resourceName: GasPriceSchedulerService.name,
-      });
-
-      return false;
-    }
-
-    if (this.isCacheValid()) {
-      this.logger.debug({
-        message: 'Gas price cache is still valid, skipping fetch',
-        resourceName: GasPriceSchedulerService.name,
-      });
-
-      return true;
-    }
-
     try {
+      const isConnected = await this.ethersService.isConnected();
+
+      if (!isConnected) {
+        this.logger.warn({
+          message: 'Ethers provider not connected',
+          resourceName: GasPriceSchedulerService.name,
+        });
+
+        return false;
+      }
+
+      if (this.isCacheValid()) {
+        this.logger.debug({
+          message: 'Gas price cache is still valid, skipping fetch',
+          resourceName: GasPriceSchedulerService.name,
+        });
+
+        return true;
+      }
+
       const feeData = await this.ethersService.getFeeData();
 
       const gasPrice: GasPriceDto = {

@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { GasPriceSchedulerService } from './gas-price-scheduler.service';
-import { GasPriceRepository } from 'src/repositories';
+import { GasPriceRepository } from '../../repositories';
 
 @Module({
   imports: [],

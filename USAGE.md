@@ -15,7 +15,6 @@ npm install
 NODE_ENV=development
 APP_PORT=3000
 ETHEREUM_RPC_URL=https://mainnet.infura.io/v3/YOUR_INFURA_PROJECT_ID
-GAS_PRICE_CACHE_DURATION=10000
 ```
 
 3. **Start the application**:
@@ -51,14 +50,14 @@ curl -X GET "http://localhost:3000/gasPrice" \
 **Example 1: USDC to WETH**
 
 ```bash
-curl -X GET "http://localhost:3000/return/0xA0b86a33E6441A8E2B34B1c43b3623A20cB5cA20/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2/1000" \
+curl -X GET "http://localhost:3000/return/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2/1000" \
   -H "Content-Type: application/json"
 ```
 
 **Example 2: WETH to USDC**
 
 ```bash
-curl -X GET "http://localhost:3000/return/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2/0xA0b86a33E6441A8E2B34B1c43b3623A20cB5cA20/1.5" \
+curl -X GET "http://localhost:3000/return/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48/1.5" \
   -H "Content-Type: application/json"
 ```
 
@@ -66,7 +65,7 @@ curl -X GET "http://localhost:3000/return/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C75
 
 ```json
 {
-  "fromTokenAddress": "0xA0b86a33E6441A8E2B34B1c43b3623A20cB5cA20",
+  "fromTokenAddress": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
   "toTokenAddress": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
   "amountIn": "1000",
   "amountOut": "0.456789123456",
@@ -80,7 +79,7 @@ curl -X GET "http://localhost:3000/return/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C75
 ### Mainnet Tokens
 
 - **WETH**: `0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2`
-- **USDC**: `0xA0b86a33E6441A8E2B34B1c43b3623A20cB5cA20`
+- **USDC**: `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`
 - **USDT**: `0xdAC17F958D2ee523a2206206994597C13D831ec7`
 - **DAI**: `0x6B175474E89094C44Da98b954EedeAC495271d0F`
 - **WBTC**: `0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599`
@@ -97,10 +96,10 @@ curl -X GET "http://localhost:3000/return/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C75
 
 ```bash
 # Test WETH to USDC swap
-curl "http://localhost:3000/return/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2/0xA0b86a33E6441A8E2B34B1c43b3623A20cB5cA20/1.0"
+curl "http://localhost:3000/return/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48/1.0"
 
 # Test USDC to WETH swap
-curl "http://localhost:3000/return/0xA0b86a33E6441A8E2B34B1c43b3623A20cB5cA20/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2/1000"
+curl "http://localhost:3000/return/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2/1000"
 
 # Test gas price
 curl "http://localhost:3000/gasPrice"
@@ -127,7 +126,7 @@ Response: `400 Bad Request - Pair does not exist`
 ### Invalid Amount
 
 ```bash
-curl "http://localhost:3000/return/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2/0xA0b86a33E6441A8E2B34B1c43b3623A20cB5cA20/0"
+curl "http://localhost:3000/return/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48/0"
 ```
 
 Response: `400 Bad Request - Amount in must be greater than 0`
@@ -153,7 +152,7 @@ apt-get install apache2-utils
 ab -n 1000 -c 10 "http://localhost:3000/gasPrice"
 
 # Test UniswapV2 calculation
-ab -n 100 -c 5 "http://localhost:3000/return/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2/0xA0b86a33E6441A8E2B34B1c43b3623A20cB5cA20/1.0"
+ab -n 100 -c 5 "http://localhost:3000/return/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48/1.0"
 ```
 
 ## Monitoring
@@ -204,7 +203,6 @@ docker run -p 3000:3000 --env-file .env blockchain-api
 NODE_ENV=production
 APP_PORT=3000
 ETHEREUM_RPC_URL=https://mainnet.infura.io/v3/YOUR_PRODUCTION_KEY
-GAS_PRICE_CACHE_DURATION=10000
 ```
 
 ## Troubleshooting

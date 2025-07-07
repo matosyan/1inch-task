@@ -1,42 +1,38 @@
-import { GasPriceDto, GasPriceRepository } from '../../repositories';
+import { UniswapReturnDto } from './dto';
+import { UniswapV2Service } from './uniswap-v2.service';
 import { BlockchainService } from './blockchain.service';
-import { UniswapReturnDto } from './dto/uniswap-return.dto';
 import { AppLogger } from '../../packages/app-logger/app-logger';
-import { GetReturnParamsDto } from './dto/get-return-params.dto';
+import { GasPriceDto, GasPriceRepository } from '../../repositories';
+import { BlockchainNetwork, ParseBlockchainAddressPipe } from './pipes';
 import {
   Get,
   Param,
-  UsePipes,
+  HttpCode,
   HttpStatus,
   Controller,
   HttpException,
-  ValidationPipe,
   ParseFloatPipe,
 } from '@nestjs/common';
 import {
   ApiTags,
   ApiParam,
-  ApiResponse,
   ApiOperation,
   ApiOkResponse,
   ApiBadRequestResponse,
   ApiInternalServerErrorResponse,
 } from '@nestjs/swagger';
-import {
-  BlockchainNetwork,
-  ParseBlockchainAddressPipe,
-} from './pipes/parse-blockchain-address.pipe';
+import { Throttle } from '@nestjs/throttler';
 
 @ApiTags('blockchain')
 @Controller()
 export class BlockchainController {
   constructor(
     private readonly logger: AppLogger,
+    private readonly uniswapV2Service: UniswapV2Service,
     private readonly blockchainService: BlockchainService,
     private readonly gasPriceRepository: GasPriceRepository,
   ) {}
 
-  @Get('/gasPrice')
   @ApiOperation({
     summary: 'Get current Ethereum gas price',
     description: 'Returns the current gas price information with response time under 50ms',
@@ -48,6 +44,14 @@ export class BlockchainController {
   @ApiInternalServerErrorResponse({
     description: 'Internal server error while fetching gas price',
   })
+  @Throttle({
+    'gas-price': {
+      ttl: 60000, // 1 minute
+      limit: 100, // 100 requests per minute - generous due to caching
+    },
+  })
+  @HttpCode(HttpStatus.OK)
+  @Get('/gasPrice')
   async getGasPrice(): Promise<GasPriceDto> {
     try {
       const startTime = Date.now();
@@ -56,13 +60,21 @@ export class BlockchainController {
         await this.blockchainService.fetchGasPrice();
       }
 
+      // Check if gas price is still null after fetching
+      if (!this.gasPriceRepository.gasPrice) {
+        throw new HttpException('Failed to retrieve gas price', HttpStatus.INTERNAL_SERVER_ERROR);
+      }
+
       const responseTime = Date.now() - startTime;
 
-      this.logger.debug({
-        message: `Gas price retrieved in ${responseTime}ms`,
-        data: { gasPrice: this.gasPriceRepository.gasPrice },
-        resourceName: BlockchainController.name,
-      });
+      try {
+        this.logger.info({
+          message: `Gas price retrieved in ${responseTime}ms`,
+          resourceName: BlockchainController.name,
+        });
+      } catch (loggingError) {
+        // Continue execution even if logging fails
+      }
 
       return this.gasPriceRepository.gasPrice;
     } catch (error) {
@@ -71,7 +83,6 @@ export class BlockchainController {
     }
   }
 
-  @Get('return/:fromTokenAddress/:toTokenAddress/:amountIn')
   @ApiOperation({
     summary: 'Calculate UniswapV2 return amount',
     description:
@@ -92,10 +103,8 @@ export class BlockchainController {
     description: 'Input amount in human-readable format',
     example: '1.5',
   })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'Return amount calculated successfully',
-    type: UniswapReturnDto,
   })
   @ApiBadRequestResponse({
     description: 'Invalid parameters provided',
@@ -103,14 +112,20 @@ export class BlockchainController {
   @ApiInternalServerErrorResponse({
     description: 'Internal server error while calculating return',
   })
-  @UsePipes(new ValidationPipe({ transform: true }))
+  @Throttle({
+    'uniswap-calculation': {
+      ttl: 60000, // 1 minute
+      limit: 30, // 30 requests per minute - more restrictive due to computation
+    },
+  })
+  @HttpCode(HttpStatus.OK)
+  @Get('return/:fromTokenAddress/:toTokenAddress/:amountIn')
   async getReturn(
     @Param(
       'fromTokenAddress',
       new ParseBlockchainAddressPipe({
         required: true,
         network: BlockchainNetwork.ETHEREUM,
-        allowChecksum: true,
       }),
     )
     fromTokenAddress: string,
@@ -119,38 +134,34 @@ export class BlockchainController {
       new ParseBlockchainAddressPipe({
         required: true,
         network: BlockchainNetwork.ETHEREUM,
-        allowChecksum: true,
       }),
     )
     toTokenAddress: string,
     @Param('amountIn', ParseFloatPipe) amountIn: number,
   ): Promise<UniswapReturnDto> {
-    return null;
-    // try {
-    //   const { fromTokenAddress, toTokenAddress, amountIn } = params;
+    try {
+      this.logger.debug(
+        `Calculating return for: ${fromTokenAddress} -> ${toTokenAddress}, amount: ${amountIn}`,
+      );
 
-    //   this.logger.debug(
-    //     `Calculating return for: ${fromTokenAddress} -> ${toTokenAddress}, amount: ${amountIn}`,
-    //   );
+      const result = await this.uniswapV2Service.calculateReturn(
+        fromTokenAddress,
+        toTokenAddress,
+        amountIn,
+      );
 
-    //   const result = await this.uniswapV2Service.calculateReturn(
-    //     fromTokenAddress,
-    //     toTokenAddress,
-    //     amountIn,
-    //   );
+      return result;
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
 
-    //   return result;
-    // } catch (error) {
-    //   this.logger.error('Failed to calculate return', error as string);
+      this.logger.error('Failed to calculate return', error as string);
 
-    //   if (error instanceof HttpException) {
-    //     throw error;
-    //   }
-
-    //   throw new HttpException(
-    //     'Failed to calculate return amount',
-    //     HttpStatus.INTERNAL_SERVER_ERROR,
-    //   );
-    // }
+      throw new HttpException(
+        'Failed to calculate return amount',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }

@@ -1,15 +1,13 @@
-import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { ethers } from 'ethers';
 import BigNumber from 'bignumber.js';
-import { UniswapReturnDto } from './dto/uniswap-return.dto';
+import { UniswapReturnDto } from './dto';
+import { Injectable, BadRequestException } from '@nestjs/common';
+import { AppLogger } from '../../packages/app-logger/app-logger';
 import { EthersService } from '../../packages/ethers/ethers.service';
 
 @Injectable()
 export class UniswapV2Service {
-  private readonly logger = new Logger(UniswapV2Service.name);
   private readonly FACTORY_ADDRESS = '0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f';
-  private readonly INIT_CODE_HASH =
-    '0x96e8ac4277198ff8b6f785478aa9a39f403cb768dd02cbee326c3e7da348845f';
 
   // UniswapV2 Factory ABI (minimal)
   private readonly FACTORY_ABI = [
@@ -29,25 +27,26 @@ export class UniswapV2Service {
     'function symbol() external view returns (string)',
   ];
 
-  constructor(private readonly ethersService: EthersService) {}
+  constructor(
+    private readonly ethersService: EthersService,
+    private readonly logger: AppLogger,
+  ) {}
 
   async calculateReturn(
     fromTokenAddress: string,
     toTokenAddress: string,
-    amountIn: string,
+    amountIn: number,
   ): Promise<UniswapReturnDto> {
     try {
-      this.logger.debug(
-        `Calculating return for swap: ${fromTokenAddress} -> ${toTokenAddress}, amount: ${amountIn}`,
-      );
-
-      // Validate addresses
-      if (!ethers.isAddress(fromTokenAddress) || !ethers.isAddress(toTokenAddress)) {
-        throw new BadRequestException('Invalid token addresses');
-      }
+      this.logger.debug({
+        message: 'Calculating return for swap',
+        data: { fromTokenAddress, toTokenAddress, amountIn },
+        resourceName: UniswapV2Service.name,
+      });
 
       // Get pair address
       const pairAddress = await this.getPairAddress(fromTokenAddress, toTokenAddress);
+
       if (!pairAddress || pairAddress === ethers.ZeroAddress) {
         throw new BadRequestException('Pair does not exist');
       }
@@ -79,12 +78,17 @@ export class UniswapV2Service {
         fromTokenAddress,
         toTokenAddress,
         amountIn,
-        amountOut: amountOutFormatted.toString(),
-        priceImpact: this.calculatePriceImpact(amountInBN, reserveIn, reserveOut).toString(),
+        amountOut: amountOutFormatted.toNumber(),
+        priceImpact: this.calculatePriceImpact(amountInBN, reserveIn, reserveOut).toNumber(),
         timestamp: Date.now(),
       };
     } catch (error) {
-      this.logger.error('Failed to calculate return', error);
+      this.logger.error({
+        message: 'Failed to calculate return',
+        error,
+        resourceName: UniswapV2Service.name,
+      });
+
       throw error;
     }
   }
@@ -167,8 +171,6 @@ export class UniswapV2Service {
     const priceAfter = newReserveOut.dividedBy(newReserveIn);
 
     // Price impact percentage
-    const priceImpact = priceBefore.minus(priceAfter).dividedBy(priceBefore).multipliedBy(100);
-
-    return priceImpact;
+    return priceBefore.minus(priceAfter).dividedBy(priceBefore).multipliedBy(100);
   }
 }

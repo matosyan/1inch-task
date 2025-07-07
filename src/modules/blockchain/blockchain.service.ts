@@ -1,16 +1,20 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { AppLogger } from '../../packages/app-logger/app-logger';
 import { EthersService } from '../../packages/ethers/ethers.service';
 import { GasPriceDto, GasPriceRepository } from '../../repositories';
 import { GasPriceSchedulerService } from '../../schedulers/gas-price/gas-price-scheduler.service';
 
 @Injectable()
-export class BlockchainService {
+export class BlockchainService implements OnModuleInit {
   constructor(
     private readonly gasPriceRepository: GasPriceRepository,
     private readonly ethersService: EthersService,
     private readonly logger: AppLogger,
   ) {}
+
+  async onModuleInit(): Promise<void> {
+    await this.fetchGasPrice();
+  }
 
   async fetchGasPrice(): Promise<void> {
     try {

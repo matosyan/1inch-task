@@ -1,4 +1,4 @@
-import { APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_INTERCEPTOR, APP_GUARD } from '@nestjs/core';
 import { AppController } from './app.controller';
 import configuration from './config/configuration';
 import { Module, MiddlewareConsumer } from '@nestjs/common';
@@ -7,9 +7,16 @@ import configValidationSchema from './config/config.validator';
 // Interceptors
 import { ErrorInterceptor } from './shared/interceptors';
 
+// Guards
+import { ThrottlerGuard } from '@nestjs/throttler';
+
 // Providers
 import { AppService } from './app.service';
-import { EthersConfigService, AppLoggerConfigService } from './shared/services';
+import {
+  EthersConfigService,
+  AppLoggerConfigService,
+  ThrottlerConfigService,
+} from './shared/services';
 
 // NestJS Modules
 import { ConfigModule } from '@nestjs/config';
@@ -18,9 +25,9 @@ import { ConfigModule } from '@nestjs/config';
 import { EthersModule } from './packages/ethers/ethers.module';
 import { SchedulerModule } from './schedulers/scheduler.module';
 import { AppLoggerModule } from './packages/app-logger/app-logger.module';
+import { AppThrottlerModule } from './shared/modules/throttler.module';
 
 // General Modules
-import { AuthModule } from './modules/auth/auth.module';
 import { BlockchainModule } from './modules/blockchain/blockchain.module';
 
 @Module({
@@ -41,7 +48,7 @@ import { BlockchainModule } from './modules/blockchain/blockchain.module';
       useClass: EthersConfigService,
     }),
     SchedulerModule,
-    AuthModule,
+    AppThrottlerModule,
     BlockchainModule,
   ],
   controllers: [AppController],
@@ -50,6 +57,10 @@ import { BlockchainModule } from './modules/blockchain/blockchain.module';
     {
       provide: APP_INTERCEPTOR,
       useClass: ErrorInterceptor,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
     },
   ],
 })
